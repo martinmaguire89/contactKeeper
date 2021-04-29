@@ -5,6 +5,7 @@ const { check, validationResult } = require('express-validator/check'); //<< Let
 
 const User = require('../models/User');
 const Contact = require('../models/Contact');
+const { json } = require('express');
 
 //@route        GET api/contacts
 // @desc        Get all users contacts
@@ -53,25 +54,63 @@ router.post(
   }
 );
 
-//@route        POST api/contacts
-// @desc        Get all users contacts
-//@access       Private
-router.post('/', (req, res) => {
-  res.send('Get contact');
-});
-
 //@route        PUT api/contacts/:id
 // @desc        Update contact
 //@access       Private
-router.put('/:id', (req, res) => {
-  res.send('Update contacts');
+router.put('/:id', auth, async (req, res) => {
+  const { name, email, phone, type } = req.body;
+
+  //Build Contact object
+  const ContactFields = {};
+  if (name) ContactFields.name = name;
+  if (email) ContactFields.email = email;
+  if (phone) ContactFields.phone = phone;
+  if (type) ContactFields.name = type;
+
+  try {
+    let contact = await Contact.findById(req.params.id);
+
+    if (!contact) return res.status(404).json({ msg: 'Contact not found' });
+
+    //make sure user owns contact
+    if (contact.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'Not authorised' });
+    }
+
+    contact = await Contact.findByIdAndUpdate(
+      req.params.id,
+      { $set: ContactFields },
+      { new: true }
+    );
+
+    res.json(contact);
+  } catch (error) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
 });
 
 //@route        DELETE api/contacts/:id
 // @desc        delete contact
 //@access       Private
-router.delete('/:id', (req, res) => {
-  res.send('Delete contact');
+router.delete('/:id', auth, async (req, res) => {
+  try {
+    let contact = await Contact.findById(req.params.id);
+
+    if (!contact) return res.status(404).json({ msg: 'Contact not found' });
+
+    //make sure user owns contact
+    if (contact.user.toString() !== req.user.id) {
+      return res.status(401).json({ msg: 'Not authorised' });
+    }
+
+    await Contact.findByIdAndRemove(req.params.id);
+
+    res.json({ msg: 'Contact Deleted' });
+  } catch (error) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
 });
 
 module.exports = router;
