@@ -12,7 +12,7 @@ import {
   CLEAR_ERRORS,
 } from '../types';
 
-const authState = (props) => {
+const AuthState = (props) => {
   const initialState = {
     token: localStorage.getItem('token'),
     isAuthenticated: null,
@@ -21,7 +21,7 @@ const authState = (props) => {
     error: null,
   };
 
-  const [state, dispatch] = useReducer(authReducer, initialState);
+  const [state, dispatch] = useReducer(AuthReducer, initialState);
 
   //load User
 
