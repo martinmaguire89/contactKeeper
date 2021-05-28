@@ -1,6 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
+import AlertContext from '../../context/alert/alertContext';
 
 const Register = () => {
+  const alertContext = useContext(AlertContext);
+
+  const { setAlert } = alertContext;
+
   const [user, setUser] = useState({
     name: '',
     email: '',
@@ -14,30 +19,37 @@ const Register = () => {
 
   const onSubmit = (e) => {
     e.preventDefault();
-    console.log('Register Submit');
+    if (name === '' || email === '' || password === '') {
+      setAlert('Please enter all fields', 'danger');
+    } else if (password !== password2) {
+      setAlert('Password do not match', 'danger');
+    } else {
+      console.log('Register Submit');
+    }
   };
 
   return (
     <div className="form-container">
       <h1>
-        Account <span ClassName="text-primary">Register</span>
+        Account <span className="text-primary">Register</span>
       </h1>
       <form onSubmit={onSubmit}>
         <div className="form-group">
           <label htmlFor="name">Name</label>
-          <input type="text" name="name" value={name} onChange={onchange} />
+          <input type="text" name="name" value={name} onChange={onChange} />
         </div>
         <div className="form-group">
           <label htmlFor="email">Email</label>
-          <input type="email" name="email" value={email} onChange={onchange} />
+          <input type="email" name="email" value={email} onChange={onChange} />
         </div>
         <div className="form-group">
           <label htmlFor="password">Password</label>
           <input
-            type="text"
+            type="password"
             name="password"
             value={password}
-            onChange={onchange}
+            onChange={onChange}
+            minLength="6"
           />
         </div>
         <div className="form-group">
@@ -46,7 +58,8 @@ const Register = () => {
             type="password"
             name="password2"
             value={password2}
-            onChange={onchange}
+            onChange={onChange}
+            minLength="6"
           />
         </div>
         <input
